@@ -143,3 +143,14 @@ cd /root/k3s-devfest-workshop/step3-coredns
 # send the CoreDNS objects to K3S
 kubectl apply -f ./coredns.yaml
 ```
+
+```bash
+kubectl -n kube-system get pods
+```
+
+```
+NAME                                      READY   STATUS    RESTARTS   AGE
+local-path-provisioner-58fb86bdfd-7zr6g   1/1     Running   0          40m
+coredns-64bd8d7fdf-vs998                  1/1     Running   0          18s
+```
+
