@@ -85,7 +85,7 @@ Download K3S by running
 
 ```bash
 # make sure you are in the right place
-cd /root/k3s-devfest-workshop/step1-k3s
+cd /root/k3s-devfest-workshop/step2-k3s
 
 # download the binary
 wget https://github.com/rancher/k3s/releases/download/v0.10.2/k3s
@@ -98,7 +98,7 @@ chmod 755 ./k3s
 
 ```bash
 # make sure you are in the right place
-cd /root/k3s-devfest-workshop/step1-k3s
+cd /root/k3s-devfest-workshop/step2-k3s
 
 # start K3S manually
 ./start-k3s.sh
@@ -138,7 +138,8 @@ kube-system   local-path-provisioner-58fb86bdfd-7zr6g   1/1     Running   0     
 
 ```bash
 # make sure you are in the right place
-cd /root/k3s-devfest-workshop/step1-k3s
+cd /root/k3s-devfest-workshop/step3-coredns
 
+# send the CoreDNS objects to K3S
 kubectl apply -f ./coredns.yaml
 ```
