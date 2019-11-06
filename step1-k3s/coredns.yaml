@@ -12,9 +12,7 @@ metadata:
 data:
   Corefile: |
     .:53 {
-        log {
-          class error
-        }
+        log
         errors
         ready
         health
@@ -24,19 +22,12 @@ data:
         }
         k8s_external svc.test
         prometheus :9153
-        hosts /etc/coredns/hosts {
-          fallthrough
-        }
         forward . /etc/resolv.k3s.conf
         cache 30
         loop
         reload
         loadbalance
     }
-  hosts: |
-    {% for entry in coredns_hosts %}
-    {{ entry.ip_address}} {{entry.hostnames}}
-    {% endfor %}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -151,7 +142,7 @@ spec:
         beta.kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: coredns/coredns:1.6.5
+        image: coredns/coredns:1.6.1
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -203,8 +194,6 @@ spec:
             items:
             - key: Corefile
               path: Corefile
-            - key: hosts
-              path: hosts
         - name: resolv-volume
           configMap:
             name: coredns-resolv

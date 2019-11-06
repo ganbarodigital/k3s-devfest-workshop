@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - image: wordpress:apache
+        name: wordpress
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: wordpress-mysql
+        - name: WORDPRESS_DB_USER
+          value: wordpress
+        - name: WORDPRESS_DB_PASSWORD
+          value: password
+        - name: WORDPRESS_DB_NAME
+          value: devfest
+        ports:
+        - containerPort: 80
+          name: http
+          hostPort: 80
+        - containerPort: 443
+          name: https
+          hostPort: 443
+        securityContext:
+          capabilities:
+            add:
+            - NET_BIND_SERVICE
+        volumeMounts:
+        - name: wordpress-html
+          mountPath: /var/www/html
+      volumes:
+      - name: wordpress-html
+        persistentVolumeClaim:
+          claimName: wordpress-html

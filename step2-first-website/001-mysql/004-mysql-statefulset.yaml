@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wordpress-mysql
+  labels:
+    app: wordpress-mysql
+spec:
+  serviceName: wordpress-mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordpress-mysql
+  template:
+    metadata:
+      labels:
+        app: wordpress-mysql
+    spec:
+      containers:
+      - image: mysql:5.7
+        name: mysql
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          value: password
+        - name: MYSQL_USER
+          value: wordpress
+        - name: MYSQL_PASSWORD
+          value: password
+        - name: MYSQL_DATABASE
+          value: devfest
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: wordpress-mysql-data
