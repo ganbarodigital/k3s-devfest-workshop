@@ -104,7 +104,7 @@ cd /root/k3s-devfest-workshop/step2-k3s
 ./start-k3s.sh
 ```
 
-At this point, you will need to open a second Terminal window (or SSH connection).
+This will start the K3S server in the background, and write all of its log messages out to `./k3s.log`. You can use tools like `tail -f` to see what K3S is doing at any time.
 
 ### Download kubectl
 
