@@ -23,6 +23,7 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
     - [Introduction](#introduction-1)
     - [0a. Create Somewhere To Work](#0a-create-somewhere-to-work)
     - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
+    - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
   - [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
     - [1a. Install Docker](#1a-install-docker)
     - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
@@ -63,6 +64,8 @@ You're going to need some CLI tools today.
 ```bash
 apt-get install -y wget git
 ```
+
+### 0c. Clone This Git Repo
 
 Clone this Git repo:
 
