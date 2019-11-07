@@ -16,32 +16,39 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Welcome To The Workshop!](#welcome-to-the-workshop)
-  - [Introduction](#introduction)
-  - [How Can We Help?](#how-can-we-help)
-  - [Step 0: Prep](#step-0-prep)
-    - [Introduction](#introduction-1)
-    - [0a. Create Somewhere To Work](#0a-create-somewhere-to-work)
-    - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
-    - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
-  - [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
-    - [1a. Install Docker](#1a-install-docker)
-    - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
-    - [1c. Download K3S](#1c-download-k3s)
-    - [1d. Start K3S](#1d-start-k3s)
-    - [1e. Download kubectl](#1e-download-kubectl)
-    - [1f. Copy kubectl Config File](#1f-copy-kubectl-config-file)
-    - [1g. Setup Bash Completion](#1g-setup-bash-completion)
-    - [1h. Prove kubectl Is Working](#1h-prove-kubectl-is-working)
-  - [Step 2: First Website: Wordpress](#step-2-first-website-wordpress)
-    - [Underlying Principle: Local Storage](#underlying-principle-local-storage)
-    - [2a. Create The Storage For MySQL](#2a-create-the-storage-for-mysql)
-    - [2b. Install MySQL For Wordpress](#2b-install-mysql-for-wordpress)
-    - [2c. Test MySQL](#2c-test-mysql)
-    - [Underlying Principle: Port Forwarding Creates Security Issues](#underlying-principle-port-forwarding-creates-security-issues)
-    - [2d. Create The Storage For Wordpress](#2d-create-the-storage-for-wordpress)
-    - [Install Wordpress](#install-wordpress)
-    - [Testing Wordpress](#testing-wordpress)
+- [Introduction](#introduction)
+- [How Can We Help?](#how-can-we-help)
+- [Step 0: Prep](#step-0-prep)
+  - [Introduction](#introduction-1)
+  - [0a. Create Somewhere To Work](#0a-create-somewhere-to-work)
+  - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
+  - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
+- [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
+  - [1a. Install Docker](#1a-install-docker)
+  - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
+  - [1c. Download K3S](#1c-download-k3s)
+  - [1d. Start K3S](#1d-start-k3s)
+  - [1e. Download kubectl](#1e-download-kubectl)
+  - [1f. Copy kubectl Config File](#1f-copy-kubectl-config-file)
+  - [1g. Setup Bash Completion](#1g-setup-bash-completion)
+  - [1h. Prove kubectl Is Working](#1h-prove-kubectl-is-working)
+- [Step 2: First Website: Wordpress](#step-2-first-website-wordpress)
+  - [Underlying Principle: Local Storage](#underlying-principle-local-storage)
+  - [2a. Create The Storage For MySQL](#2a-create-the-storage-for-mysql)
+  - [2b. Install MySQL For Wordpress](#2b-install-mysql-for-wordpress)
+  - [2c. Test MySQL](#2c-test-mysql)
+  - [Underlying Principle: Port Forwarding Creates Security Issues](#underlying-principle-port-forwarding-creates-security-issues)
+  - [2d. Remove MySQL Port Forwarding](#2d-remove-mysql-port-forwarding)
+  - [2e. Create The Storage For Wordpress](#2e-create-the-storage-for-wordpress)
+  - [2f. Install Wordpress](#2f-install-wordpress)
+  - [2g. Testing Wordpress](#2g-testing-wordpress)
+- [Step 3: Firewalls Are A Must-Have](#step-3-firewalls-are-a-must-have)
+  - [3a. Install A Firewall](#3a-install-a-firewall)
+  - [3b. Setup The Firewall Rules](#3b-setup-the-firewall-rules)
+  - [3c. Switch On THe Firewall](#3c-switch-on-the-firewall)
+- [Step 4: Adding Support For Multiple Websites](#step-4-adding-support-for-multiple-websites)
+- [Step 5: Running Our Own Docker Images](#step-5-running-our-own-docker-images)
+  - [Underlying Principle: Containers And Secure Registries aka Why Docker?](#underlying-principle-containers-and-secure-registries-aka-why-docker)
 
 ## Step 0: Prep
 
@@ -59,7 +66,7 @@ sudo su -
 
 ### 0b. Install Operating System Tools
 
-You're going to need some CLI tools today. 
+You're going to need some CLI tools today.
 
 ```bash
 apt-get install -y wget git
@@ -225,7 +232,7 @@ It gives us a starting point that mimics what people actually do with Docker. It
 
 In case you weren't aware - __always treat containers as READ-ONLY systems__. If they need to write data anywhere, you need to create some storage and mount it as a volume (or two) into the container.
 
-With K3S, we do that by mounting a folder from your VM / VPS's filesystem into the container, using what is called Local storage. 
+With K3S, we do that by mounting a folder from your VM / VPS's filesystem into the container, using what is called Local storage.
 
 * The folder has to exist on your VM / VPS's filesystem; Kubernetes will not create it for you.
 * You have to use `nodeAffinity` in your _persistent volume_ config, otherwise Kubernetes will not allow you to mount the folder into your container.
@@ -289,7 +296,7 @@ apt-get install -y mysql-client
 mysql -h 127.0.0.1 -P 30006 -u wordpress -p
 ```
 
-Once you're in, you should see the following. 
+Once you're in, you should see the following.
 
 ```
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -325,15 +332,48 @@ mysql> quit
 Bye
 ```
 
+_Question: Why is it port 30006, and not the usual port of 3306?_
+
+Kubernetes' port-forwarding uses a feature called _NodePorts_. By default, they are limited to the range 30000-32767 on the host machine. You can see the mapping in the YAML file [step2-first-website/001-mysql/006-mysql-nodeport.yaml](step2-first-website/001-mysql/006-mysql-nodeport.yaml).
+
 ### Underlying Principle: Port Forwarding Creates Security Issues
 
 Btw, if you VM or VPS has a public IP address, right now _anyone_ can attempt to connect to MySQL on port 30006. Any port you open up like this is open to the world. That's how Kubernetes is designed and intended to work.
 
-In production, you'd normally fix this by running a firewall of some kind (which is a good idea to have anyway!). And by not using Docker-style port forwarding in the first place if you can avoid it.
+Port-forwarding is (mostly) a legacy feature - just like Docker's port-forwarding is. You can get away with it on a private machine, but it's best to learn safe habits as soon as possible, and to adopt those habits no matter where you are working.
 
-We'll look at how to avoid it later on in this workshop.
+Later on in the workshop, we'll install a basic firewall, both to prevent NodePorts being accessible from the Internet and to protect Kubernetes itself. But first, we need to get this first website up and running.
 
-### 2d. Create The Storage For Wordpress
+### 2d. Remove MySQL Port Forwarding
+
+Even though it's on a non-standard port, we can't leave MySQL open like this. We've tested that MySQL is working. We don't need the port forwarding any more.
+
+Run this command to delete the port-forwarding.
+
+```bash
+# this deletes the port-forwarding configuration
+kubectl delete service wordpress-mysql-nodeport
+```
+
+If you try to access MySQL via the port-forwarding now:
+
+```bash
+mysql -h 127.0.0.1 -P 30006 -u wordpress -p
+```
+
+... you should see this error:
+
+```
+ERROR 2003 (HY000): Can't connect to MySQL server on '127.0.0.1' (111)
+```
+
+You can still access MySQL by using its Kubernetes Cluster IP:
+
+```bash
+mysql -h `kubectl get service wordpress-mysql -o jsonpath="{.spec.clusterIP}"` -u wordpress -p
+```
+
+### 2e. Create The Storage For Wordpress
 
 The process for installing Wordpress is very similar to how we installed MySQL.
 
@@ -346,7 +386,7 @@ Run this command:
 mkdir -p /var/lib/k3s/default/wordpress-html
 ```
 
-### Install Wordpress
+### 2f. Install Wordpress
 
 Use `kubectl` to tell Kubernetes our _desired state_ for Wordpress:
 
@@ -391,7 +431,7 @@ wordpress-tbbhz     1/1     Running   0          79s
 
 Once again, the exact names will be different. Kubernetes generates unique, pseudo-random names for every 'pod' that you start.
 
-### Testing Wordpress
+### 2g. Testing Wordpress
 
 Point your web browser at the IP address of your VM or VPS. (If you are using the Vagrantfile in this Git repo, point your browser at `http://192.168.33.10`)
 
