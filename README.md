@@ -45,10 +45,7 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
 - [Step 3: Firewalls Are A Must-Have](#step-3-firewalls-are-a-must-have)
   - [3a. Install A Firewall](#3a-install-a-firewall)
   - [3b. Setup The Firewall Rules](#3b-setup-the-firewall-rules)
-  - [3c. Switch On THe Firewall](#3c-switch-on-the-firewall)
-- [Step 4: Adding Support For Multiple Websites](#step-4-adding-support-for-multiple-websites)
-- [Step 5: Running Our Own Docker Images](#step-5-running-our-own-docker-images)
-  - [Underlying Principle: Containers And Secure Registries aka Why Docker?](#underlying-principle-containers-and-secure-registries-aka-why-docker)
+  - [3c. Switch On The Firewall](#3c-switch-on-the-firewall)
 
 ## Step 0: Prep
 
@@ -439,3 +436,54 @@ You should see the Install Wordpress screen:
 
 ![wordpress-install.png](./wordpress-install.png)
 
+## Step 3: Firewalls Are A Must-Have
+
+We can't go any further without putting a firewall onto your VM or VPS for safety.
+
+### 3a. Install A Firewall
+
+Run this command:
+
+```bash
+# install Ubuntu's firewall software
+apt-get install -y ufw
+```
+
+This install's Canonical's own `ufw` firewall software. It's basic, but it'll do the job we need - and lots of people have written articles about how to use it.
+
+### 3b. Setup The Firewall Rules
+
+Before we switch the firewall on, we need to tell it what rules we want it to enforce.
+
+Run these commands:
+
+```bash
+# this should be the default, but just in case
+ufw default deny incoming
+
+# keep SSH access, prevent excessive connections
+ufw allow 22
+ufw limit 22
+
+# keep HTTP/HTTPS access to our hosted website
+ufw allow 80
+ufw allow 443
+```
+
+### 3c. Switch On The Firewall
+
+```bash
+# switch on the firewall
+ufw enable
+```
+
+You should see this prompt. Enter `y` to switch on the firewall.
+
+```
+Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
+Firewall is active and enabled on system startup
+```
+
+
+
+[start-k3s.sh](step1-k3s/start-k3s.sh)
