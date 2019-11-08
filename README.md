@@ -54,6 +54,11 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
   - [4e. Test Ingress](#4e-test-ingress)
   - [4f. Setup A Second Site](#4f-setup-a-second-site)
   - [So What Have We Done?](#so-what-have-we-done)
+- [Step 5: Running Our Own Docker Images](#step-5-running-our-own-docker-images)
+  - [Underlying Principle: Containers And Secure Registries aka Why Docker?](#underlying-principle-containers-and-secure-registries-aka-why-docker)
+  - [5a. Build A Docker Image](#5a-build-a-docker-image)
+  - [5b. Deploy The Docker Image](#5b-deploy-the-docker-image)
+  - [5c. Test The Deployment](#5c-test-the-deployment)
 
 ## Step 0: Prep
 
@@ -695,5 +700,98 @@ Point your web browser at [http://wordpress.second-site.test](http://wordpress.s
 
 This is where Kubernetes starts to make more sense than Docker: when you want to run multiple, independent systems on the same VM, VPS or bare metal machine.
 
+## Step 5: Running Our Own Docker Images
+
+To finish the hands-on portion of the workshop, we're going to build and deploy our own Docker image onto K3S.
+
+### Underlying Principle: Containers And Secure Registries aka Why Docker?
+
+Kubernetes - whether full fat, or slimmed right down like K3s - is (at heart) another way to download and run Docker images from container registries. While there's a lot of third-party images already available (and we've used some of them in this workshop today), you will end up making and deploying your own Docker images sooner or later.
+
+_And when you do, you'll discover the hell that is private container registries._
+
+The long and short of it is that a container registry is either:
+
+* on `localhost`, or
+* has to be available via HTTPS, cannot use self-signed TLS certificates
+
+You can't easily run your own private container registry (for example) inside your private company network. And if you run it somewhere else (e.g. you buy one from Docker Hub or from AWS), you're stuck with uploading and downloading images over your external Internet link - with the costs and bandwidth requirements that brings. That can be very painful.
+
+One way around that pain is to build your Docker images directly on the VPS or VM where K3S is running. It's a trade-off, and it only works for small-scale operations. But it is an option.
+
+And that's why we're running Docker on the VPS or VM.
+
+### 5a. Build A Docker Image
+
+```bash
+# make sure you are in the right place
+cd /root/k3s-devfest-workshop/step5-your-docker-images/001-docker-image
+
+# create the docker image
+docker build -t my-private-image:latest .
+```
+
+Verify that the image has been built:
+
+```bash
+docker image ls
+```
+
+You should see something like this:
+
+```
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+my-private-image                 latest              6e64c3d3c796        7 seconds ago       126MB
+wordpress                        apache              c3a1256d5af5        2 weeks ago         537MB
+nginx                            latest              540a289bab6c        2 weeks ago         126MB
+mysql                            5.7                 cd3ed0dfff7e        3 weeks ago         437MB
+rancher/local-path-provisioner   v0.0.11             9d12f9848b99        5 weeks ago         36.2MB
+coredns/coredns                  1.6.3               c4d3d16fe508        2 months ago        44.3MB
+traefik                          1.7.14              f12ee21b2b87        2 months ago        84.4MB
+rancher/klipper-lb               v0.1.2              897ce3c5fc8f        5 months ago        6.1MB
+rancher/klipper-helm             v0.1.5              c1e4f72eb676        7 months ago        83.2MB
+hello-world                      latest              fce289e99eb9        10 months ago       1.84kB
+k8s.gcr.io/pause                 3.1                 da86e6ba6ca1        22 months ago       742kB
+```
+
+### 5b. Deploy The Docker Image
+
+```bash
+# make sure you are in the right place
+cd /root/k3s-devfest-workshop/step5-your-docker-images/002-deployment
+
+# send the K8S objects up to Kubernetes
+kubectl apply -f .
+```
+
+Run this command to watch the new pod spinning up:
+
+```
+watch kubectl get pods -n private-image
+```
+
+### 5c. Test The Deployment
+
+Once both pods are running, add an entry in your `hosts` file for `nginx.private-image.test`. Here's mine (on MacOS) for reference:
+
+```
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+192.168.33.10 wordpress.default.test
+192.168.33.10 wordpress.second-site.test
+192.168.33.10 nginx.private-image.test
+```
+
+Point your web browser at [http://nginx.private-image.test](http://nginx.private-image.test), and you'll see the second copy of Wordpress is now up and running.
+
+## References <!-- omit in toc -->
 
 [start-k3s.sh](step1-k3s/start-k3s.sh)

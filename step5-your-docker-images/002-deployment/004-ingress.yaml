@@ -1,0 +1,17 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx
+  namespace: private-image
+  labels:
+    app: nginx
+spec:
+  rules:
+  - host: nginx.private-image.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: nginx
+          servicePort: http
