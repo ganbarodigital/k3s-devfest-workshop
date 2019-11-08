@@ -1,0 +1,22 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: traefik-ingress-ui
+  namespace: kube-system
+  labels:
+    app: traefik-ingress-ui
+    app.kubernetes.io/name: traefik-ingress
+    app.kubernetes.io/instance: traefik-system
+    app.kubernetes.io/version: latest
+    app.kubernetes.io/component: ui
+    app.kubernetes.io/part-of: k3s-stack
+spec:
+  rules:
+  - host: traefik-ui.kube-system.svc.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: traefik-ingress-service
+          servicePort: admin
