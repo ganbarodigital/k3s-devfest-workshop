@@ -20,9 +20,10 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
 - [How Can We Help?](#how-can-we-help)
 - [Step 0: Prep](#step-0-prep)
   - [Introduction](#introduction-1)
-  - [0a. Create Somewhere To Work](#0a-create-somewhere-to-work)
+  - [0a. Become Root](#0a-become-root)
   - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
   - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
+  - [0d. Do You Need A Swap File?](#0d-do-you-need-a-swap-file)
 - [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
   - [1a. Install Docker](#1a-install-docker)
   - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
@@ -53,7 +54,7 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
 
 Before we get K3S up and running, there's some work to do to your VPS or VM.
 
-### 0a. Create Somewhere To Work
+### 0a. Become Root
 
 SSH into your VPS (or open a Terminal window if you are working in a local VM) and run:
 
@@ -81,7 +82,28 @@ cd /root
 git clone https://github.com/ganbarodigital/k3s-devfest-workshop
 ```
 
-The rest of these instructions assume that you've done these steps first :)
+### 0d. Do You Need A Swap File?
+
+How much memory does your VM or VPS have?
+
+```bash
+free -h
+```
+
+```
+free -h
+              total        used        free      shared  buff/cache   available
+Mem:           985M        653M         72M        2.7M        259M        196M
+```
+
+If you've got less than 1.5GB of memory in your VM / VPS, you'll need to add a swap file for today:
+
+```bash
+dd if=/dev/zero of=/mnt/1GB.swap bs=1024 count=1048576
+mkswap /mnt/1GB.swap
+chmod 600 /mnt/1GB.swap
+swapon /mnt/1GB.swap
+```
 
 ## Step 1: Install And Run K3S
 
