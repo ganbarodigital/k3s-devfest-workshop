@@ -14,8 +14,6 @@ spec:
       labels:
         app: wordpress
     spec:
-      hostNetwork: false
-      dnsPolicy: ClusterFirstWithHostNet
       containers:
       - image: wordpress:apache
         name: wordpress
