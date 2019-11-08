@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-mysql-data
+  namespace: second-site
+  labels:
+    app: wordpress-mysql
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: second-site-wordpress-mysql-data
+  resources:
+    requests:
+      storage: 1Gi

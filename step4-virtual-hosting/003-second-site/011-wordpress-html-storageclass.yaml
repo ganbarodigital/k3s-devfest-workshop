@@ -1,0 +1,9 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: second-site-wordpress-html
+  labels:
+    app: wordpress-html
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer

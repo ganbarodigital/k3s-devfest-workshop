@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-html
+  namespace: second-site
+  labels:
+    app: wordpress
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  storageClassName: second-site-wordpress-html
+  resources:
+    requests:
+      storage: 1Gi

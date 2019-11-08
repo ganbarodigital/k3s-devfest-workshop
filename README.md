@@ -47,6 +47,13 @@ If you've come across this repo in the future, Kubernetes et al has probably mov
   - [3a. Install A Firewall](#3a-install-a-firewall)
   - [3b. Setup The Firewall Rules](#3b-setup-the-firewall-rules)
   - [3c. Switch On The Firewall](#3c-switch-on-the-firewall)
+- [Step 4: Adding Support For Multiple Websites](#step-4-adding-support-for-multiple-websites)
+  - [4a. Stop Our Wordpress Site](#4a-stop-our-wordpress-site)
+  - [4b. Restart K3S w/ Ingress Support](#4b-restart-k3s-w-ingress-support)
+  - [4d. Route Traffic To Wordpress](#4d-route-traffic-to-wordpress)
+  - [4e. Test Ingress](#4e-test-ingress)
+  - [4f. Setup A Second Site](#4f-setup-a-second-site)
+  - [So What Have We Done?](#so-what-have-we-done)
 
 ## Step 0: Prep
 
@@ -177,7 +184,7 @@ Download K3S by running:
 
 ```bash
 # make sure you are in the right place
-cd /root/k3s-devfest-workshop/step1-k3s
+cd /root/k3s-devfest-workshop
 
 # download the binary
 wget https://github.com/rancher/k3s/releases/download/v0.10.2/k3s
@@ -308,7 +315,11 @@ Connect to MySQL using the official CLI client:
 ```bash
 # install a MySQL client
 apt-get install -y mysql-client
+```
 
+Once the client is installed, run this command:
+
+```bash
 # connect to the database
 #
 # when prompted, the password is 'password'
@@ -433,8 +444,6 @@ watch kubectl get pods
 You'll see something like this at first:
 
 ```
-Every 2.0s: kubectl get pods                                                ubuntu-bionic: Wed Nov  6 10:53:07 2019
-
 NAME                READY   STATUS              RESTARTS   AGE
 wordpress-mysql-0   1/1     Running             0          100s
 wordpress-tbbhz     0/1     ContainerCreating   0          32s
@@ -490,6 +499,9 @@ ufw limit 22
 # keep HTTP/HTTPS access to our hosted website
 ufw allow 80
 ufw allow 443
+
+# allow K3S to talk to the pods
+ufw allow in on cni0
 ```
 
 ### 3c. Switch On The Firewall
@@ -506,6 +518,182 @@ Command may disrupt existing ssh connections. Proceed with operation (y|n)? y
 Firewall is active and enabled on system startup
 ```
 
+## Step 4: Adding Support For Multiple Websites
+
+In Step 2, we configured our website to sit directly on port 80 of our VM or VPS. But what if we want to run multiple websites on our VM or VPS?
+
+In this step, we're going to reconfigure everything so that we can run as many websites as our VM or VPS can handle.
+
+### 4a. Stop Our Wordpress Site
+
+First thing we need to do is to stop our Wordpress deployment. It's currently listening on ports 80 and 443, and we need to free up those ports to enable Ingress support.
+
+Run this command:
+
+```bash
+# stop our current Wordpress instance
+kubectl delete deployment wordpress
+```
+
+```
+kubectl get pods
+NAME                        READY   STATUS        RESTARTS   AGE
+wordpress-mysql-0           1/1     Running       0          4m36s
+wordpress-7f566b9ff-thkj2   0/1     Terminating   0          2m12s
+```
+
+```
+kubectl get pods
+NAME                READY   STATUS    RESTARTS   AGE
+wordpress-mysql-0   1/1     Running   0          5m1s
+```
+
+### 4b. Restart K3S w/ Ingress Support
+
+Ingress is a network routing solution for Kubernetes. Officially, it only supports HTTP and HTTPS.
+
+K3S comes with a built-in Ingress feature that's built on Traefik. Until now, we've been running K3S with Ingress switched off. It's time to switch it on!
+
+Run these commands:
+
+```bash
+# make sure you're in the right place
+cd /root/k3s-devfest-workshop/step4-virtual-hosting/001-ingress
+
+# stop our existing K3S server
+kill `ps -ef | grep "./k3s server" | grep -v grep | awk '{ print $2 }'`
+
+# start K3S with Ingress enabled
+./start-k3s-with-ingress.sh
+```
+
+Run this command, to see K3S starting up again:
+
+```bash
+tail -f /root/k3s-devfest-workshop/k3s.log
+```
+
+Run this command, to watch the progress:
+
+```bash
+watch kubectl get pods --all-namespaces
+```
+
+After a few minutes, you should see something like this:
+
+```
+NAMESPACE     NAME                                      READY   STATUS      RESTARTS   AGE
+kube-system   coredns-57d8bbb86-5v58q                   1/1     Running     0          7m36s
+kube-system   local-path-provisioner-58fb86bdfd-scx4m   1/1     Running     0          7m36s
+default       wordpress-mysql-0                         1/1     Running     0          6m55s
+kube-system   helm-install-traefik-k94vr                0/1     Completed   0          59s
+kube-system   svclb-traefik-qkfq4                       3/3     Running     0          35s
+kube-system   traefik-65bccdc4bd-lpjs9                  1/1     Running     0          35s
+```
+
+There are two new pods running:
+
+* `svclb-traefik` - the service load balancer for Traefik
+* `traefik` - the Ingress controller
+
+### 4d. Route Traffic To Wordpress
+
+```bash
+# make sure you're in the right place
+cd /root/k3s-devfest-workshop/step4-virtual-hosting/002-wordpress
+
+kubectl apply -f .
+```
+
+### 4e. Test Ingress
+
+On the machine where your web browser is, add an entry for `wordpress.default.test` to your machine's `hosts` file:
+
+* on Linux, this will be the file `/etc/hosts`
+* on MacOS, the file is `/private/etc/hosts`
+* on Windows 10, the file is `C:\Windows\System32\drivers\etc\hosts`
+
+You'll need to put in the IP address of the VM or VPS where K3S is running. If you're using the `Vagrantfile` included in this Git repo, that IP address is `192.168.33.10`.
+
+Here's what my `hosts` file looks like.
+
+```
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+192.168.33.10 wordpress.default.test
+```
+
+Once you've saved your `hosts` file, point your web browser at [http://wordpress.default.test](http://wordpress.default.test). You should see Wordpress appear once again.
+
+### 4f. Setup A Second Site
+
+Let's quickly setup a second, completely independent, Wordpress site.
+
+Run this command:
+
+```bash
+# create the folders for our local volumes
+mkdir -p /var/lib/k3s/second-site/wordpress-mysql-data
+mkdir -p /var/lib/k3s/second-site/wordpress-html
+
+# make sure we're in the right place
+cd /root/k3s-devfest-workshop/step4-virtual-hosting/003-second-site
+
+# edit the files:
+#
+# * 002-mysql-data-pv.yaml
+# * 012-wordpress-html-pv.yaml
+#
+# change the string 'ubuntu-bionic' to the hostname of
+# YOUR VPS or VM
+#
+# if you forget to do this, your deployment will hang!
+
+# send the Wordpress objects to K3S
+kubectl apply -f .
+```
+
+Run this command to watch the second Wordpress instance spinning up:
+
+```
+watch kubectl get pods -n second-site
+```
+
+Once both pods are running, add an entry in your `hosts` file for `wordpress.second-site.test`. Here's mine (on MacOS) for reference:
+
+```
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost
+
+192.168.33.10 wordpress.default.test
+192.168.33.10 wordpress.second-site.test
+```
+
+Point your web browser at [http://wordpress.second-site.test](http://wordpress.second-site.test), and you'll see the second copy of Wordpress is now up and running.
+
+### So What Have We Done?
+
+* We have restarted K3S, and told it to use its _Ingress Controller_ and _Service LoadBalancer_.
+* We have reconfigured our original Wordpress deployment, so that it no longer listens on port 80 of your K3S machine.
+* We have configured the _Ingress Controller_ to send requests for `wordpress.default.test` to our original Wordpress deployment. You'll find that config in the file [./step4-virtual-hosting/002-wordpress/006-wordpress-ingress.yaml](./step4-virtual-hosting/002-wordpress/006-wordpress-ingress.yaml).
+* We have deployed a second, independent Wordpress / MySQL pair into the namespace `second-site`.
+
+This is where Kubernetes starts to make more sense than Docker: when you want to run multiple, independent systems on the same VM, VPS or bare metal machine.
 
 
 [start-k3s.sh](step1-k3s/start-k3s.sh)

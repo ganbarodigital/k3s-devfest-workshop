@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-./k3s \
+../k3s \
   server \
   --no-deploy=servicelb \
   --no-deploy=traefik \

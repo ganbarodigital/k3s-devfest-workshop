@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: wordpress-mysql-nodeport
   labels:
-    app: wordpress
+    app: wordpress-mysql
 spec:
   ports:
     - port: 3306

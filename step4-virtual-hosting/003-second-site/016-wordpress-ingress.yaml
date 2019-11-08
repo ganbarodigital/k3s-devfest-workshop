@@ -1,0 +1,17 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress
+  namespace: second-site
+  labels:
+    app: wordpress
+spec:
+  rules:
+  - host: wordpress.second-site.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: wordpress
+          servicePort: http

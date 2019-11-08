@@ -1,0 +1,16 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  rules:
+  - host: wordpress.default.test
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: wordpress
+          servicePort: http
