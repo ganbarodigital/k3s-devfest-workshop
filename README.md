@@ -54,54 +54,55 @@ If you are interested in containerising your apps, and running them on cheap VPS
 
 ## Table of Contents <!-- omit in toc -->
 
-- [Introduction](#introduction)
-- [K3S vs K8S](#k3s-vs-k8s)
-- [You Need A VPS or VM](#you-need-a-vps-or-vm)
-- [Don't Worry If You Don't Complete All The Steps During The Workshop](#dont-worry-if-you-dont-complete-all-the-steps-during-the-workshop)
-- [How Can We Help?](#how-can-we-help)
-- [Step 0: Prep](#step-0-prep)
-  - [0a. Become Root](#0a-become-root)
-  - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
-  - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
-  - [0d. Do You Need A Swap File?](#0d-do-you-need-a-swap-file)
-- [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
-  - [1a. Install Docker](#1a-install-docker)
-  - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
-  - [1c. Download K3S](#1c-download-k3s)
-  - [1d. Start K3S](#1d-start-k3s)
-  - [1e. Download kubectl](#1e-download-kubectl)
-  - [1f. Copy kubectl Config File](#1f-copy-kubectl-config-file)
-  - [1g. Setup Bash Completion](#1g-setup-bash-completion)
-  - [1h. Prove kubectl Is Working](#1h-prove-kubectl-is-working)
-- [Step 2: First Website: Wordpress](#step-2-first-website-wordpress)
-  - [Underlying Principle: Local Storage](#underlying-principle-local-storage)
-  - [2a. Create The Storage For MySQL](#2a-create-the-storage-for-mysql)
-  - [2b. Install MySQL For Wordpress](#2b-install-mysql-for-wordpress)
-  - [2c. Test MySQL](#2c-test-mysql)
-  - [Underlying Principle: Port Mapping Creates Security Issues](#underlying-principle-port-mapping-creates-security-issues)
-  - [2d. Remove MySQL Port Mapping](#2d-remove-mysql-port-mapping)
-  - [2e. Create The Storage For Wordpress](#2e-create-the-storage-for-wordpress)
-  - [2f. Install Wordpress](#2f-install-wordpress)
-  - [2g. Testing Wordpress](#2g-testing-wordpress)
-  - [2h. Add An Entry To Your Hosts File](#2h-add-an-entry-to-your-hosts-file)
-- [Step 3: Firewalls Are A Must-Have](#step-3-firewalls-are-a-must-have)
-  - [3a. Install A Firewall](#3a-install-a-firewall)
-  - [3b. Setup The Firewall Rules](#3b-setup-the-firewall-rules)
-  - [3c. Switch On The Firewall](#3c-switch-on-the-firewall)
-  - [What Does The Firewall Do?](#what-does-the-firewall-do)
-- [Step 4: Adding Support For Multiple Websites](#step-4-adding-support-for-multiple-websites)
-  - [4a. Stop Our Wordpress Site](#4a-stop-our-wordpress-site)
-  - [4b. Restart K3S w/ Ingress Support](#4b-restart-k3s-w-ingress-support)
-  - [4d. Route Traffic To Wordpress](#4d-route-traffic-to-wordpress)
-  - [4e. Test Ingress](#4e-test-ingress)
-  - [4f. Setup A Second Site](#4f-setup-a-second-site)
-  - [So What Have We Done?](#so-what-have-we-done)
-- [Step 5: Running Our Own Docker Images](#step-5-running-our-own-docker-images)
-  - [Underlying Principle: Containers And Secure Registries aka Why Docker?](#underlying-principle-containers-and-secure-registries-aka-why-docker)
-  - [5a. Build A Docker Image](#5a-build-a-docker-image)
-  - [5b. Deploy The Docker Image](#5b-deploy-the-docker-image)
-  - [5c. Test The Deployment](#5c-test-the-deployment)
-- [Conclusion](#conclusion)
+- [Welcome To The Workshop!](#welcome-to-the-workshop)
+  - [Introduction](#introduction)
+  - [K3S vs K8S](#k3s-vs-k8s)
+  - [You Need A VPS or VM](#you-need-a-vps-or-vm)
+  - [Don't Worry If You Don't Complete All The Steps During The Workshop](#dont-worry-if-you-dont-complete-all-the-steps-during-the-workshop)
+  - [How Can We Help?](#how-can-we-help)
+  - [Step 0: Prep](#step-0-prep)
+    - [0a. Become Root](#0a-become-root)
+    - [0b. Install Operating System Tools](#0b-install-operating-system-tools)
+    - [0c. Clone This Git Repo](#0c-clone-this-git-repo)
+    - [0d. Do You Need A Swap File?](#0d-do-you-need-a-swap-file)
+  - [Step 1: Install And Run K3S](#step-1-install-and-run-k3s)
+    - [1a. Install Docker](#1a-install-docker)
+    - [1b. Test That Docker Is Working](#1b-test-that-docker-is-working)
+    - [1c. Download K3S](#1c-download-k3s)
+    - [1d. Start K3S](#1d-start-k3s)
+    - [1e. Download kubectl](#1e-download-kubectl)
+    - [1f. Copy kubectl Config File](#1f-copy-kubectl-config-file)
+    - [1g. Setup Bash Completion](#1g-setup-bash-completion)
+    - [1h. Prove kubectl Is Working](#1h-prove-kubectl-is-working)
+  - [Step 2: First Website: Wordpress](#step-2-first-website-wordpress)
+    - [Underlying Principle: Local Storage](#underlying-principle-local-storage)
+    - [2a. Create The Storage For MySQL](#2a-create-the-storage-for-mysql)
+    - [2b. Install MySQL For Wordpress](#2b-install-mysql-for-wordpress)
+    - [2c. Test MySQL](#2c-test-mysql)
+    - [Underlying Principle: Port Mapping Creates Security Issues](#underlying-principle-port-mapping-creates-security-issues)
+    - [2d. Remove MySQL Port Mapping](#2d-remove-mysql-port-mapping)
+    - [2e. Create The Storage For Wordpress](#2e-create-the-storage-for-wordpress)
+    - [2f. Install Wordpress](#2f-install-wordpress)
+    - [2g. Testing Wordpress](#2g-testing-wordpress)
+    - [2h. Add An Entry To Your Hosts File](#2h-add-an-entry-to-your-hosts-file)
+  - [Step 3: Firewalls Are A Must-Have](#step-3-firewalls-are-a-must-have)
+    - [3a. Install A Firewall](#3a-install-a-firewall)
+    - [3b. Setup The Firewall Rules](#3b-setup-the-firewall-rules)
+    - [3c. Switch On The Firewall](#3c-switch-on-the-firewall)
+    - [What Does The Firewall Do?](#what-does-the-firewall-do)
+  - [Step 4: Adding Support For Multiple Websites](#step-4-adding-support-for-multiple-websites)
+    - [4a. Stop Our Wordpress Site](#4a-stop-our-wordpress-site)
+    - [4b. Restart K3S w/ Ingress Support](#4b-restart-k3s-w-ingress-support)
+    - [4d. Route Traffic To Wordpress](#4d-route-traffic-to-wordpress)
+    - [4e. Test Ingress](#4e-test-ingress)
+    - [4f. Setup A Second Site](#4f-setup-a-second-site)
+    - [So What Have We Done?](#so-what-have-we-done)
+  - [Step 5: Running Our Own Docker Images](#step-5-running-our-own-docker-images)
+    - [Underlying Principle: Containers And Secure Registries aka Why Docker?](#underlying-principle-containers-and-secure-registries-aka-why-docker)
+    - [5a. Build A Docker Image](#5a-build-a-docker-image)
+    - [5b. Deploy The Docker Image](#5b-deploy-the-docker-image)
+    - [5c. Test The Deployment](#5c-test-the-deployment)
+  - [Conclusion](#conclusion)
 
 ## Step 0: Prep
 
@@ -249,7 +250,8 @@ cd /root/k3s-devfest-workshop
 # download the binary
 #
 # K3S is distributed as a single binary
-wget https://github.com/rancher/k3s/releases/download/v0.10.2/k3s
+# latest version as of 16th August 2020
+wget https://github.com/rancher/k3s/releases/download/v1.18.8%2Bk3s1/k3s
 
 # make it executable
 chmod 755 ./k3s
@@ -286,8 +288,17 @@ In a production system, you'd setup K3S as a `systemd` service. There are plenty
 Run these commands to download and install the tool:
 
 ```bash
-wget https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/linux/amd64/kubectl
+# make sure you are in the right place
+cd /root/k3s-devfest-workshop
+
+# download the Kubernetes CLI client
+# latest version as of 16th August 2020
+wget https://storage.googleapis.com/kubernetes-release/release/v1.18.8/bin/linux/amd64/kubectl
+
+# make the CLI client executable
 chmod 755 ./kubectl
+
+# install it to work system-wide
 mv ./kubectl /usr/local/sbin
 ```
 
@@ -782,7 +793,7 @@ kubectl apply -f .
 Run this command to watch Wordpress start again:
 
 ```bash
-kubectl get pods
+watch kubectl get pods
 ```
 
 You'll see something like this:
