@@ -49,13 +49,13 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-   vb.memory = "2048"
-end
+    vb.memory = "2048"
+  end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -67,4 +67,14 @@ end
   #   apt-get update
   #   apt-get install -y apache2
   # SHELL
+  config.vm.provision "file", source: "bash_prompt.sh", destination: "~/bash_prompt.sh"
+  config.vm.provision "shell", inline: <<-SHELL
+    mv ~vagrant/bash_prompt.sh /etc/bash_prompt.sh
+  SHELL
+  config.vm.provision "file", source: "bashrc", destination: "~/.bashrc"
+  config.vm.provision "shell", inline: <<-SHELL
+    cp ~vagrant/.bashrc ~/.bashrc
+    echo 'ENV_TYPE=vagrant' > /etc/profile.d/environment.sh
+    echo 'TERMINAL_TITLE="K3S VIRTUAL MACHINE"' > /etc/profile.d/terminal-title.sh
+  SHELL
 end
